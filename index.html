@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1f3a">
+<title>เครื่องเล่นเปียโน</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{--bg:#0f1f3a;--card:#17294a;--card2:#0b1830;--line:#2a4067;--fg:#eef1f8;--mut:#9fb0cf;--gold:#c19a4b;--gold2:#e0bb6c;--ok:#4cd08a;--bad:#ff6b6b;}
+  *{box-sizing:border-box}
+  html,body{margin:0;max-width:100%;overflow-x:hidden}
+  body{font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;background:var(--bg);color:var(--fg);-webkit-text-size-adjust:100%}
+  header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--card2);border-bottom:2px solid var(--gold);flex-wrap:wrap;gap:8px}
+  header h1{font-size:1.2rem;margin:0;color:var(--gold2)}
+  nav a{color:var(--mut);text-decoration:none;margin-left:16px;padding:6px 2px;display:inline-block}
+  nav a:hover,nav a.cur{color:var(--gold2)}
+  main{max-width:1160px;margin:0 auto;padding:14px}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  h2{margin:0 0 10px;font-size:1.05rem;color:var(--gold2)}
+  button{background:var(--gold);color:#0f1f3a;border:0;border-radius:10px;padding:10px 14px;min-height:44px;font:inherit;font-weight:600;cursor:pointer}
+  button:hover:not(:disabled){background:var(--gold2)}
+  button.sec{background:#243a63;color:var(--fg);font-weight:500}
+  button.sec:hover:not(:disabled){background:#2e4a7e}
+  button.bad{background:var(--bad);color:#fff}
+  button[aria-pressed="true"]{background:var(--gold);color:#0f1f3a}
+  button:disabled{opacity:.4;cursor:default}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+  input[type=text],input[type=password],textarea,select{width:100%;padding:10px 12px;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font:inherit}
+  textarea{min-height:76px}
+  input[type=range]{width:100%;accent-color:var(--gold);min-height:32px}
+  label{display:block;margin:10px 0 4px;color:var(--mut)}
+  ul.list{list-style:none;margin:0;padding:0}
+  ul.list li{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  ul.list li.cur{background:rgba(193,154,75,.12)}
+  ul.list li .t{flex:1;min-width:140px;overflow-wrap:anywhere}
+  ul.list li .t small{display:block;color:var(--mut)}
+  .msg{margin-top:8px;min-height:1.2em}
+  .msg.err{color:var(--bad)} .msg.ok{color:var(--ok)}
+  .help{background:var(--card2);border-left:3px solid var(--gold);padding:10px 12px;border-radius:6px;color:var(--mut);font-size:.92rem;line-height:1.6}
+  .help code{color:var(--gold2)}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .hidden{display:none!important}
+  .rec-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bad);margin-right:6px;animation:b 1s infinite}
+  @keyframes b{50%{opacity:.2}}
+
+  /* controls */
+  .ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px;margin-bottom:12px}
+  .ctl .grp{min-width:0}
+  .ctl .grp label{margin:0 0 2px;font-size:.9rem}
+  .ctl .val{color:var(--gold2);font-variant-numeric:tabular-nums}
+  .octbar{display:flex;gap:8px;align-items:center}
+  .octbar .lbl{flex:1;text-align:center;color:var(--gold2);font-weight:600;white-space:nowrap}
+
+  /* piano */
+  .piano{display:flex;flex-direction:row;gap:8px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin:6px 0 12px}
+  .octave{position:relative;flex:1 1 0;min-width:0;height:clamp(150px,22vw,240px)}
+  .wk,.bk{position:absolute;top:0;margin:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .wk *,.bk *{pointer-events:none}
+  .wk{height:100%;width:calc(100%/7);background:linear-gradient(#fbf8ef,#efe9d6);border:1px solid #8b7a52;border-radius:0 0 8px 8px;color:#33405c;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:8px;box-shadow:inset 0 -6px 0 rgba(0,0,0,.08)}
+  .bk{height:62%;width:9.2%;z-index:2;background:linear-gradient(#26324d,#05080f);border:1px solid #000;border-radius:0 0 6px 6px;color:#cfd8ec;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:6px;box-shadow:0 3px 4px rgba(0,0,0,.5)}
+  .wk.on{background:linear-gradient(#e6c377,var(--gold));color:#0f1f3a;transform:translateY(1px)}
+  .bk.on{background:linear-gradient(#d9b062,#9a7a35);color:#0f1f3a}
+  .nm{font-size:.78rem;font-weight:700;line-height:1.1}
+  .bk .nm{font-size:.62rem}
+  .hint{font-size:.7rem;opacity:.65;margin-bottom:2px}
+  @media (hover:none){.hint{display:none}}
+  @media (max-width:700px){
+    main{padding:8px}
+    section.card{padding:10px;margin-bottom:10px}
+    .piano{flex-direction:column;gap:10px}
+    .octave{flex:none;width:100%;height:150px}
+    .nm{font-size:.8rem}
+  }
+  /* transport */
+  .transport{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+  .transport button{min-width:56px;font-size:1.05rem}
+  #play-btn{min-width:96px}
+  .progress-row{display:flex;gap:10px;align-items:center}
+  .progress-row .tm{font-variant-numeric:tabular-nums;color:var(--mut);font-size:.88rem;white-space:nowrap}
+  #now-title{text-align:center;color:var(--gold2);font-weight:600;min-height:1.5em;overflow-wrap:anywhere}
+
+  /* mode tabs */
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tabs button{flex:1}
+  /* key marks (scale / chord tones) */
+  .wk::after,.bk::after{content:'';position:absolute;left:50%;border-radius:50%;display:none;pointer-events:none}
+  .mk-sc::after,.mk-root::after,.mk-blue::after,.mk-ct::after{display:block!important}
+  .wk.mk-sc::after{bottom:46px;width:10px;height:10px;margin-left:-5px;background:#3f78cf}
+  .bk.mk-sc::after{bottom:36px;width:9px;height:9px;margin-left:-4.5px;background:#7fb0ff}
+  .wk.mk-root::after{bottom:42px;width:18px;height:18px;margin-left:-9px;background:var(--gold);border:2px solid #6b4e12;box-shadow:0 0 0 2px rgba(193,154,75,.35)}
+  .bk.mk-root::after{bottom:32px;width:16px;height:16px;margin-left:-8px;background:var(--gold2);border:2px solid #6b4e12}
+  .wk.mk-blue::after{bottom:46px;width:11px;height:11px;margin-left:-5.5px;border-radius:2px;transform:rotate(45deg);background:#e0457b}
+  .bk.mk-blue::after{bottom:36px;width:10px;height:10px;margin-left:-5px;border-radius:2px;transform:rotate(45deg);background:#ff6f9f}
+  .wk.mk-ct::after{bottom:44px;width:14px;height:14px;margin-left:-7px;background:#27c2b5;border:2px solid #0b5c55}
+  .bk.mk-ct::after{bottom:34px;width:13px;height:13px;margin-left:-6.5px;background:#5fe8dc;border:2px solid #0b5c55}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--mut);margin:0 0 8px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+  .legend i.g{background:var(--gold)} .legend i.b{background:#3f78cf} .legend i.p{background:#e0457b;border-radius:2px;transform:rotate(45deg)} .legend i.t{background:#27c2b5}
+  /* improvise */
+  .chordbox{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0}
+  #cc-name{font-size:2.2rem;font-weight:700;color:var(--gold2);min-width:3.2ch;line-height:1.1}
+  #cc-roman{font-size:1.2rem;color:var(--fg)}
+  .chordbox .sub{color:var(--mut);font-size:.92rem}
+  .bargrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+  .bargrid .bar{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;min-width:0}
+  .bargrid .bar b{display:block;font-size:1rem;overflow-wrap:anywhere}
+  .bargrid .bar small{color:var(--mut);font-size:.72rem}
+  .bargrid .bar.cur{background:var(--gold);color:#0f1f3a;border-color:var(--gold2)}
+  .bargrid .bar.cur small{color:#0f1f3a}
+  .earbox{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+  #ear-fb{font-size:1.15rem;min-height:1.6em;margin-top:8px}
+  #ear-fb.ok{color:var(--ok)} #ear-fb.no{color:var(--bad)}
+  .compact-btn{min-height:44px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎹 เครื่องเล่นเปียโน</h1>
+  <nav><a href="#" id="nav-player" class="cur">เครื่องเล่น</a><a href="#admin" id="nav-admin">ผู้ดูแลระบบ</a></nav>
+</header>
+<main>
+
+<!-- ============ PLAYER VIEW ============ -->
+<div id="view-player">
+  <section class="card">
+    <h2>เปียโน</h2>
+    <div class="ctl">
+      <div class="grp">
+        <label>อ็อกเทฟ</label>
+        <div class="octbar">
+          <button class="sec" id="oct-down" aria-label="ลดอ็อกเทฟ">−</button>
+          <span class="lbl" id="oct-label">C4–B5</span>
+          <button class="sec" id="oct-up" aria-label="เพิ่มอ็อกเทฟ">+</button>
+        </div>
+      </div>
+      <div class="grp">
+        <label for="volume">ระดับเสียง <span class="val" id="volume-val">70%</span></label>
+        <input type="range" id="volume" min="0" max="100" value="70">
+      </div>
+      <div class="grp">
+        <label for="tone-select">โทนเสียง</label>
+        <select id="tone-select">
+          <option value="piano">เปียโน</option>
+          <option value="organ">ออร์แกน</option>
+          <option value="bright">เสียงใส</option>
+        </select>
+      </div>
+    </div>
+    <div class="piano" id="piano" role="group" aria-label="คีย์บอร์ดเปียโน"></div>
+    <div class="row">
+      <button id="rec-btn">● อัดเสียง</button>
+      <span id="rec-status" class="hidden"><span class="rec-dot"></span>กำลังบันทึก...</span>
+    </div>
+    <div class="msg" id="player-msg"></div>
+  </section>
+
+  <div class="tabs" role="group" aria-label="โหมด">
+    <button class="sec" id="tab-songs" aria-pressed="true">🎵 เล่นเพลง</button>
+    <button class="sec" id="tab-improv" aria-pressed="false">🎷 อิมโพรไวส์</button>
+  </div>
+
+  <div id="songs-panel">
+  <section class="card" id="player-card">
+    <h2>เครื่องเล่นเพลง</h2>
+    <div id="now-title">เลือกเพลงจากรายการด้านล่าง</div>
+    <div class="progress-row">
+      <span class="tm" id="time-cur">0:00</span>
+      <input type="range" id="progress" min="0" max="1000" value="0" aria-label="ความคืบหน้าของเพลง">
+      <span class="tm" id="time-total">0:00</span>
+    </div>
+    <div class="transport">
+      <button class="sec" id="prev-btn" aria-label="เพลงก่อนหน้า">⏮</button>
+      <button id="play-btn">▶ เล่น</button>
+      <button class="sec" id="stop-btn" aria-label="หยุด">■ หยุด</button>
+      <button class="sec" id="next-btn" aria-label="เพลงถัดไป">⏭</button>
+      <button class="sec" id="loop-btn" aria-pressed="false">🔁 วนซ้ำ</button>
+    </div>
+    <div class="ctl" style="margin-bottom:0">
+      <div class="grp">
+        <label for="tempo">เทมโป <span class="val" id="tempo-val">120 จังหวะ/นาที</span></label>
+        <input type="range" id="tempo" min="40" max="240" value="120">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>รายการเพลง</h2>
+    <ul class="list" id="playlist"></ul>
+    <h2 style="margin-top:16px">เพลงที่บันทึกไว้</h2>
+    <ul class="list" id="rec-playlist"></ul>
+  </section>
+  </div>
+
+  <div id="improv-panel" class="hidden">
+  <section class="card">
+    <h2>อิมโพรไวส์</h2>
+    <div class="ctl">
+      <div class="grp"><label for="imp-key">คีย์</label>
+        <select id="imp-key">
+          <option value="0">C</option><option value="1">D♭</option><option value="2">D</option><option value="3">E♭</option>
+          <option value="4">E</option><option value="5">F</option><option value="6">F♯</option><option value="7">G</option>
+          <option value="8">A♭</option><option value="9">A</option><option value="10">B♭</option><option value="11">B</option>
+        </select></div>
+      <div class="grp"><label for="imp-cat">ประเภท</label>
+        <select id="imp-cat">
+          <option value="blues">บลูส์</option><option value="jazz">แจ๊ส</option><option value="pop">ป๊อป / เล่นตามหู</option>
+        </select></div>
+      <div class="grp"><label for="imp-prog">คอร์ดโปรเกรสชัน</label><select id="imp-prog"></select></div>
+      <div class="grp hidden" id="grp-style"><label for="imp-style">สไตล์แบ็คกิ้ง</label>
+        <select id="imp-style"><option value="pop">ป๊อปง่าย (คอร์ดบล็อก)</option><option value="ballad">บัลลาด (อาร์เปจโจช้า)</option></select></div>
+      <div class="grp" id="grp-scale"><label for="imp-scale">สเกล</label>
+        <select id="imp-scale">
+          <option value="minpent">ไมเนอร์เพนทาโทนิก</option><option value="blues">บลูส์ (มีบลูส์โน้ต)</option>
+          <option value="majpent">เมเจอร์เพนทาโทนิก</option><option value="dorian">ดอเรียน</option><option value="mixo">มิกโซลิเดียน</option>
+        </select></div>
+      <div class="grp" id="grp-auto"><label>แนะนำสเกลตามคอร์ด</label>
+        <button class="sec" id="imp-auto" aria-pressed="false" style="width:100%">เปิดแนะนำอัตโนมัติ</button></div>
+    </div>
+    <div class="legend"><span><i class="g"></i>โน้ตหลัก (root)</span><span><i class="b"></i>โน้ตในสเกล</span><span id="lg-blue"><i class="p"></i>บลูส์โน้ต</span><span id="lg-ct"><i class="t"></i>โน้ตในคอร์ด</span></div>
+    <div class="ctl">
+      <div class="grp"><label for="imp-tempo">เทมโป <span class="val" id="imp-tempo-val">100 จังหวะ/นาที</span></label><input type="range" id="imp-tempo" min="60" max="200" value="100"></div>
+      <div class="grp"><label for="imp-swing">สวิง <span class="val" id="imp-swing-val">67%</span></label><input type="range" id="imp-swing" min="0" max="100" value="67"></div>
+      <div class="grp"><label for="imp-vol">ระดับเสียงแบ็คกิ้ง <span class="val" id="imp-vol-val">60%</span></label><input type="range" id="imp-vol" min="0" max="100" value="60"></div>
+    </div>
+    <div class="row"><button id="imp-start">▶ เริ่มแบ็คกิ้ง</button><span class="sub" style="color:var(--mut)">กด “● อัดเสียง” ด้านบนเพื่ออัดการอิมโพรไวส์ทับแบ็คกิ้ง</span></div>
+    <div class="chordbox" aria-live="polite">
+      <div><div class="sub">คอร์ดปัจจุบัน</div><div id="cc-name">–</div></div>
+      <div><div id="cc-roman">–</div><div class="sub" id="cc-bar">บาร์ –</div></div>
+      <div class="sub" id="cc-scale" style="flex:1;min-width:180px"></div>
+    </div>
+    <div class="bargrid" id="bar-grid"></div>
+
+    <div class="help" id="help-blues">
+      <b>วิธีอิมโพรไวส์บลูส์/แจ๊ส</b><br>
+      1) เล่นเฉพาะโน้ตที่มีจุดบนคีย์ (โน้ตในสเกล) จุดทองคือโน้ตหลักของสเกล จะเล่นผิดน้อยที่สุด<br>
+      2) ใช้บลูส์โน้ต (จุดสี่เหลี่ยมชมพู คือโน้ตแฟลต 5 ในสเกลบลูส์) ไถลหรือกดแป๊บเดียวแล้วเลื่อนไปโน้ตข้างเคียงให้ได้อารมณ์บลูส์<br>
+      3) เมื่อคอร์ดเปลี่ยน ให้เล่นโน้ตเสียงที่ 3 หรือเสียงที่ 7 ของคอร์ดนั้น เพราะเป็นเสียงที่บอกสีสันของคอร์ด (ดูชื่อคอร์ดที่กำลังเล่นด้านบน)<br>
+      4) เว้นช่องว่าง: เล่นประโยคสั้นๆ 2–4 โน้ต หยุดหายใจ แล้วเล่นซ้ำโดยเปลี่ยนเล็กน้อย<br>
+      5) เปิด “แนะนำสเกลตามคอร์ด” เพื่อให้สเกลที่ไฮไลต์เปลี่ยนตามคอร์ดโดยอัตโนมัติ
+    </div>
+    <div class="help hidden" id="help-pop">
+      <b>วิธีเล่นตามหู (ป๊อป)</b><br>
+      1) หาคีย์: ฟังโน้ตที่รู้สึกเหมือน “บ้าน” ของเพลง (ฟังแล้วจบสนิท) แล้วลองกดหลายๆ คีย์จนเจอ<br>
+      2) ฟังเสียงโน้ตหลัก (root) ของแต่ละคอร์ด จุดทองคือโน้ตรากของคอร์ดที่กำลังเล่น<br>
+      3) ลองคอร์ดพื้นฐาน 4 ตัวของคีย์: I, IV, V และ vi (เช่นคีย์ C คือ C, F, G, Am) ดูว่าตัวไหนเข้ากับเพลงที่ได้ยิน<br>
+      4) จุดสีเขียวน้ำทะเลคือโน้ตในคอร์ด จุดสีฟ้าคือสเกลเมเจอร์เพนทาโทนิกของคีย์ ซึ่งปลอดภัยสำหรับการเล่นเมโลดี้<br>
+      5) เริ่มและจบประโยคเมโลดี้บนโน้ตของคอร์ด แล้วค่อยเพิ่มโน้ตอื่นระหว่างทาง
+    </div>
+    <div class="earbox hidden" id="ear-panel">
+      <h2 style="margin-bottom:6px">ฝึกตามหู</h2>
+      <div class="sub" style="color:var(--mut);margin-bottom:8px">กด “เล่นโจทย์” ฟังโน้ต 4–6 ตัวจากสเกลของคีย์ (จะมีโน้ตหลักนำก่อน) แล้วเล่นตามบนเปียโน ตรวจเฉพาะชื่อโน้ต ไม่สนอ็อกเทฟ</div>
+      <div class="row">
+        <button id="ear-new">🎧 เล่นโจทย์</button>
+        <button class="sec" id="ear-replay" disabled>↻ ฟังซ้ำ</button>
+        <span id="ear-score">คะแนน: 0 / 0</span>
+      </div>
+      <div id="ear-fb"></div>
+    </div>
+  </section>
+  </div>
+</div>
+
+<!-- ============ ADMIN VIEW ============ -->
+<div id="view-admin" class="hidden">
+  <section class="card" id="admin-login">
+    <h2>เข้าสู่ระบบผู้ดูแล</h2>
+    <form id="login-form" autocomplete="off">
+      <label for="login-pw">รหัสผ่าน</label>
+      <input type="password" id="login-pw" placeholder="กรอกรหัสผ่าน">
+      <div class="row" style="margin-top:10px"><button type="submit" id="login-btn">เข้าสู่ระบบ</button></div>
+      <div class="msg err" id="login-msg"></div>
+    </form>
+  </section>
+
+  <div id="admin-panel" class="hidden">
+    <section class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">จัดการระบบ</h2>
+        <button class="sec" id="logout-btn">ออกจากระบบ</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>เพิ่มเพลง</h2>
+      <label for="song-title">ชื่อเพลง</label>
+      <input type="text" id="song-title" placeholder="เช่น เพลงทดลอง">
+      <label for="song-notes">โน้ตเพลง</label>
+      <textarea id="song-notes" placeholder="C4:1 D4:1 E4:2"></textarea>
+      <div class="help" id="notes-help">
+        <b>วิธีเขียนโน้ต:</b> เขียนโน้ตแต่ละตัวในรูปแบบ <code>ชื่อโน้ต+ระดับเสียง:ความยาว</code> คั่นด้วยช่องว่าง<br>
+        • ชื่อโน้ต: <code>C D E F G A B</code> ใช้ <code>#</code> สำหรับเสียงชาร์ป และ <code>b</code> สำหรับเสียงแฟลต เช่น <code>F#4</code>, <code>Bb3</code><br>
+        • ระดับเสียง (octave): ตัวเลข 2–6 โดย <code>C4</code> คือโดกลาง<br>
+        • ความยาว: จำนวนจังหวะ (เช่น <code>1</code> = 1 จังหวะ, <code>0.5</code> = ครึ่งจังหวะ, <code>2</code> = 2 จังหวะ) ถ้าไม่ใส่จะเท่ากับ 1 (ความเร็วปรับได้ด้วยแถบเทมโปในหน้าเครื่องเล่น)<br>
+        • พักเสียง: ใช้ <code>R:1</code> (พัก 1 จังหวะ)<br>
+        • ตัวอย่าง: <code>C4:1 D4:1 E4:2 R:1 G4:0.5 F#4:0.5</code>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="sec" id="preview-btn">▶ ฟังตัวอย่าง</button>
+        <button id="add-btn">เพิ่มเพลง</button>
+      </div>
+      <div class="msg" id="add-msg"></div>
+    </section>
+
+    <section class="card">
+      <h2>เพลงในรายการ</h2>
+      <ul class="list" id="admin-songs"></ul>
+      <div class="row" style="margin-top:10px"><button class="sec" id="reset-songs-btn">คืนค่าเพลงเริ่มต้น</button></div>
+    </section>
+
+    <section class="card">
+      <h2>เพลงที่บันทึก</h2>
+      <ul class="list" id="admin-recs"></ul>
+    </section>
+
+    <section class="card">
+      <h2>เปลี่ยนรหัส</h2>
+      <form id="pw-form" autocomplete="off">
+        <label for="pw-old">รหัสผ่านเดิม</label>
+        <input type="password" id="pw-old">
+        <label for="pw-new">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label>
+        <input type="password" id="pw-new">
+        <label for="pw-new2">ยืนยันรหัสผ่านใหม่</label>
+        <input type="password" id="pw-new2">
+        <div class="row" style="margin-top:10px"><button type="submit" id="pw-btn">เปลี่ยนรหัส</button></div>
+        <div class="msg" id="pw-msg"></div>
+      </form>
+    </section>
+  </div>
+</div>
+
+</main>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- SHA-256 (pure JS, works on file:// and http where crypto.subtle is unavailable) ---------- */
+function sha256(str){
+  var bytes = new TextEncoder().encode(str);
+  var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  var l=bytes.length, bitLen=l*8;
+  var padLen=((l+9+63)>>6)<<6;
+  var m=new Uint8Array(padLen); m.set(bytes); m[l]=0x80;
+  var dv=new DataView(m.buffer);
+  dv.setUint32(padLen-8,Math.floor(bitLen/0x100000000)); dv.setUint32(padLen-4,bitLen>>>0);
+  var w=new Uint32Array(64);
+  function rr(x,n){return (x>>>n)|(x<<(32-n));}
+  for(var off=0;off<padLen;off+=64){
+    for(var i=0;i<16;i++) w[i]=dv.getUint32(off+i*4);
+    for(i=16;i<64;i++){
+      var s0=rr(w[i-15],7)^rr(w[i-15],18)^(w[i-15]>>>3);
+      var s1=rr(w[i-2],17)^rr(w[i-2],19)^(w[i-2]>>>10);
+      w[i]=(w[i-16]+s0+w[i-7]+s1)|0;
+    }
+    var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for(i=0;i<64;i++){
+      var S1=rr(e,6)^rr(e,11)^rr(e,25), ch=(e&f)^(~e&g);
+      var t1=(h+S1+ch+K[i]+w[i])|0;
+      var S0=rr(a,2)^rr(a,13)^rr(a,22), mj=(a&b)^(a&c)^(b&c);
+      var t2=(S0+mj)|0;
+      h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+    }
+    H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
+  }
+  return H.map(function(x){return ('00000000'+(x>>>0).toString(16)).slice(-8);}).join('');
+}
+
+/* ---------- Config / storage ---------- */
+// Only the SHA-256 hash of the default password is kept in code (default password documented in README).
+var DEFAULT_PW_HASH = 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270';
+var KEY_PW='mp_pw_hash', KEY_SONGS='mp_songs_v2', KEY_RECS='mp_recorded_v1', KEY_SESSION='mp_admin_ok', KEY_PREFS='mp_prefs_v1';
+
+var DEFAULT_SONGS=[
+  {id:'d1',title:'ทเวนเคิล ทเวนเคิล ลิตเติลสตาร์',notes:'C4:1 C4:1 G4:1 G4:1 A4:1 A4:1 G4:2 F4:1 F4:1 E4:1 E4:1 D4:1 D4:1 C4:2 G4:1 G4:1 F4:1 F4:1 E4:1 E4:1 D4:2 G4:1 G4:1 F4:1 F4:1 E4:1 E4:1 D4:2 C4:1 C4:1 G4:1 G4:1 A4:1 A4:1 G4:2 F4:1 F4:1 E4:1 E4:1 D4:1 D4:1 C4:2'},
+  {id:'d2',title:'Ode to Joy',notes:'E4:1 E4:1 F4:1 G4:1 G4:1 F4:1 E4:1 D4:1 C4:1 C4:1 D4:1 E4:1 E4:1.5 D4:0.5 D4:2 E4:1 E4:1 F4:1 G4:1 G4:1 F4:1 E4:1 D4:1 C4:1 C4:1 D4:1 E4:1 D4:1.5 C4:0.5 C4:2'},
+  {id:'d3',title:'Jingle Bells',notes:'E4:1 E4:1 E4:2 E4:1 E4:1 E4:2 E4:1 G4:1 C4:1.5 D4:0.5 E4:4 F4:1 F4:1 F4:1.5 F4:0.5 F4:1 E4:1 E4:1 E4:0.5 E4:0.5 E4:1 D4:1 D4:1 E4:1 D4:2 G4:2'}
+];
+
+function load(k,def){try{var v=JSON.parse(localStorage.getItem(k));return v==null?def:v;}catch(e){return def;}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v));}
+function getSongs(){
+  var s=load(KEY_SONGS,null);
+  if(!Array.isArray(s)){s=DEFAULT_SONGS.slice();save(KEY_SONGS,s);}
+  return s;
+}
+function getRecs(){var r=load(KEY_RECS,[]);return Array.isArray(r)?r:[];}
+function currentPwHash(){return localStorage.getItem(KEY_PW)||DEFAULT_PW_HASH;}
+function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pad2(n){return (n<10?'0':'')+n;}
+function fmtTime(sec){sec=Math.max(0,Math.round(sec));return Math.floor(sec/60)+':'+pad2(sec%60);}
+var prefs=load(KEY_PREFS,{}); if(!prefs||typeof prefs!=='object') prefs={};
+function savePrefs(){save(KEY_PREFS,prefs);}
+
+/* ---------- Notes ---------- */
+var SEMI={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function noteToMidi(name){
+  var m=/^([A-Ga-g])([#b]?)(\d)$/.exec(name);
+  if(!m) return null;
+  var oct=+m[3]; if(oct<2||oct>6) return null;
+  var s=SEMI[m[1].toUpperCase()]+(m[2]==='#'?1:m[2]==='b'?-1:0);
+  return 12*(oct+1)+s;
+}
+function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
+var NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function midiName(m){return NAMES[m%12]+(Math.floor(m/12)-1);}
+// Parse "C4:1 D4:1 E4:2" -> {events:[{start,len,midi}], total, count} (times in beats) or {error}
+function parseNotes(text){
+  var toks=String(text||'').trim().split(/\s+/).filter(Boolean);
+  if(!toks.length) return {error:'กรุณากรอกโน้ตเพลง'};
+  var ev=[], t=0, count=0;
+  for(var i=0;i<toks.length;i++){
+    var parts=toks[i].split(':');
+    if(parts.length>2) return {error:'รูปแบบไม่ถูกต้องที่ "'+toks[i]+'" (ใช้ชื่อโน้ต:ความยาว)'};
+    var beats=1;
+    if(parts.length===2){
+      if(!/^\d+(\.\d+)?$/.test(parts[1])) return {error:'ความยาวไม่ถูกต้องที่ "'+toks[i]+'" (ต้องเป็นตัวเลข เช่น 1, 0.5, 2)'};
+      beats=parseFloat(parts[1]);
+      if(!(beats>0)||beats>16) return {error:'ความยาวต้องมากกว่า 0 และไม่เกิน 16 ที่ "'+toks[i]+'"'};
+    }
+    if(/^[Rr]$/.test(parts[0])){t+=beats;continue;}
+    var midi=noteToMidi(parts[0]);
+    if(midi===null) return {error:'ไม่รู้จักโน้ต "'+parts[0]+'" (ตัวอย่างที่ถูกต้อง: C4, F#4, Bb3, ระดับเสียง 2–6)'};
+    ev.push({start:t,len:beats,midi:midi}); count++; t+=beats;
+  }
+  return {events:ev,total:t,count:count};
+}
+function recToItem(r){ // recorded ms events -> beats at 120 bpm reference (1 beat = 500 ms)
+  var ev=r.events.map(function(e){return {start:e.t/500,len:e.d/500,midi:e.m};}).sort(function(a,b){return a.start-b.start;});
+  var total=ev.reduce(function(a,e){return Math.max(a,e.start+e.len);},0);
+  return {events:ev,total:total};
+}
+
+/* ---------- Audio engine ---------- */
+var ctx=null, master=null, comp=null, bus=null, analyser=null, backVol=60;
+var TONES={
+  piano :{t1:'triangle',t2:'sawtooth',r2:1,   det:5, g1:1,   g2:0.28,cut:7, peak:0.55,a:0.008,sus:0.18,tau:0.55,rel:0.28},
+  organ :{t1:'sine',    t2:'square',  r2:2,   det:6, g1:1,   g2:0.12,cut:5, peak:0.40,a:0.025,sus:0.85,tau:0.05,rel:0.09},
+  bright:{t1:'sine',    t2:'sine',    r2:2.005,det:7,g1:1,   g2:0.45,cut:12,peak:0.50,a:0.004,sus:0.05,tau:0.35,rel:0.45}
+};
+var tone=TONES[prefs.tone]?prefs.tone:'piano';
+var volume=typeof prefs.volume==='number'?prefs.volume:70;
+function volGain(){var v=volume/100;return v*v*0.9;}
+function backGain(){var v=backVol/100;return v*v*1.0;}
+function audio(){
+  if(!ctx){
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null;
+    ctx=new AC();
+    master=ctx.createGain(); master.gain.value=volGain();
+    comp=ctx.createDynamicsCompressor();
+    master.connect(comp); comp.connect(ctx.destination);
+    bus=ctx.createGain(); bus.gain.value=backGain(); bus.connect(comp);
+    analyser=ctx.createAnalyser(); analyser.fftSize=1024; comp.connect(analyser);
+  }
+  if(ctx.state!=='running'&&ctx.resume){ try{ctx.resume();}catch(e){} }
+  return ctx;
+}
+// iOS/Safari: the first user gesture creates + resumes the context and plays a silent buffer.
+function unlockAudio(){
+  var c=audio(); if(!c) return;
+  try{var b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}
+  if(c.state==='running'){['touchstart','touchend','pointerdown','mousedown','click','keydown'].forEach(function(ev){document.removeEventListener(ev,unlockAudio,true);});}
+}
+['touchstart','touchend','pointerdown','mousedown','click','keydown'].forEach(function(ev){document.addEventListener(ev,unlockAudio,true);});
+
+// Starts a voice (2 detuned oscillators + envelope). Returns {release(when)}.
+function startVoice(midi,when,params,dest,vel){
+  var c=audio(); if(!c) return {release:function(){}};
+  var p=params||TONES[tone], f=midiToFreq(midi), t0=Math.max(when||0,c.currentTime), pk=p.peak*(vel==null?1:vel);
+  var o1=c.createOscillator(), o2=c.createOscillator();
+  o1.type=p.t1; o2.type=p.t2;
+  o1.frequency.value=f; o2.frequency.value=f*p.r2;
+  o1.detune.value=-p.det; o2.detune.value=p.det;
+  var g1=c.createGain(), g2=c.createGain(); g1.gain.value=p.g1; g2.gain.value=p.g2;
+  var filt=c.createBiquadFilter(); filt.type='lowpass';
+  filt.frequency.value=Math.min(f*p.cut,14000); filt.Q.value=0.5;
+  var env=c.createGain(), rel=c.createGain();
+  env.gain.setValueAtTime(0.0001,t0);
+  env.gain.linearRampToValueAtTime(pk,t0+p.a);
+  env.gain.setTargetAtTime(pk*p.sus,t0+p.a,p.tau);
+  o1.connect(g1); o2.connect(g2); g1.connect(filt); g2.connect(filt);
+  filt.connect(env); env.connect(rel); rel.connect(dest||master);
+  o1.start(t0); o2.start(t0);
+  var done=false;
+  return {release:function(when2){
+    if(done) return; done=true;
+    var t=Math.max(when2||0,c.currentTime);
+    rel.gain.setValueAtTime(1,t);
+    rel.gain.setTargetAtTime(0,t,p.rel/3);
+    var end=t+p.rel*2+0.1;
+    try{o1.stop(end);o2.stop(end);}catch(e){}
+  }};
+}
+
+/* ---------- Key lighting ---------- */
+var lit={}; // midi -> count
+function light(midi,on){
+  lit[midi]=(lit[midi]||0)+(on?1:-1); if(lit[midi]<0) lit[midi]=0;
+  var el=document.querySelector('#piano [data-midi="'+midi+'"]');
+  if(el) el.classList.toggle('on',lit[midi]>0);
+}
+
+/* ---------- Piano ---------- */
+var baseOct=typeof prefs.baseOct==='number'?Math.min(5,Math.max(2,prefs.baseOct)):4;
+var KEYMAP={KeyA:0,KeyW:1,KeyS:2,KeyE:3,KeyD:4,KeyF:5,KeyT:6,KeyG:7,KeyY:8,KeyH:9,KeyU:10,KeyJ:11,KeyK:12,KeyO:13,KeyL:14,KeyP:15,Semicolon:16};
+var HINT={}; (function(){var L={KeyA:'A',KeyW:'W',KeyS:'S',KeyE:'E',KeyD:'D',KeyF:'F',KeyT:'T',KeyG:'G',KeyY:'Y',KeyH:'H',KeyU:'U',KeyJ:'J',KeyK:'K',KeyO:'O',KeyL:'L',KeyP:'P',Semicolon:';'};for(var k in KEYMAP)HINT[KEYMAP[k]]=L[k];})();
+var BLACK_AFTER={0:1,1:1,3:1,4:1,5:1}; // white index (C D E F G A B = 0..6) that has a black key to its right
+var WHITE_SEMI=[0,2,4,5,7,9,11];
+function buildPiano(){
+  var root=$('piano'), base=12*(baseOct+1), html='';
+  for(var o=0;o<2;o++){
+    html+='<div class="octave">';
+    for(var w=0;w<7;w++){
+      var m=base+12*o+WHITE_SEMI[w], off=m-base, h=HINT[off];
+      html+='<div class="wk" data-midi="'+m+'" data-note="'+midiName(m)+'" style="left:'+(w*100/7)+'%">'+(h?'<span class="hint">'+h+'</span>':'')+'<span class="nm">'+midiName(m)+'</span></div>';
+    }
+    for(w=0;w<7;w++){
+      if(!BLACK_AFTER[w]) continue;
+      m=base+12*o+WHITE_SEMI[w]+1; off=m-base; h=HINT[off];
+      html+='<div class="bk" data-midi="'+m+'" data-note="'+midiName(m)+'" style="left:calc('+((w+1)*100/7)+'% - 4.6%)">'+(h?'<span class="hint">'+h+'</span>':'')+'<span class="nm">'+midiName(m)+'</span></div>';
+    }
+    html+='</div>';
+  }
+  root.innerHTML=html;
+  Object.keys(lit).forEach(function(m){if(lit[m]>0){var el=root.querySelector('[data-midi="'+m+'"]');if(el)el.classList.add('on');}});
+  $('oct-label').textContent=midiName(base)+'–'+midiName(base+23);
+  $('oct-down').disabled=baseOct<=2; $('oct-up').disabled=baseOct>=5;
+  if(window.__updateHighlights) window.__updateHighlights();
+}
+function setOctave(n){
+  n=Math.min(5,Math.max(2,n)); if(n===baseOct) return;
+  baseOct=n; prefs.baseOct=n; savePrefs(); buildPiano();
+}
+
+var recording=false, recStart=0, recEvents=[], recBacking=null;
+var dbg=window.__dbg={noteOns:0,midis:[]};
+function pressNote(midi,live){ // user-played note
+  var h={midi:midi,voice:startVoice(midi),t:performance.now()};
+  light(midi,true); dbg.noteOns++; dbg.midis.push(midi); if(dbg.midis.length>200) dbg.midis.shift();
+  if(window.__earInput) window.__earInput(midi);
+  return h;
+}
+function releaseNote(h){
+  if(!h||!h.voice) return;
+  h.voice.release(); light(h.midi,false);
+  if(recording&&h.t>=recStart){recEvents.push({m:h.midi,t:Math.round(h.t-recStart),d:Math.max(80,Math.round(performance.now()-h.t))});}
+  h.voice=null;
+}
+var pointers={}, kbd={};
+function keyAt(x,y){
+  var el=document.elementFromPoint(x,y); var k=el&&el.closest?el.closest('#piano [data-midi]'):null; return k;
+}
+(function wirePiano(){
+  var root=$('piano');
+  root.addEventListener('pointerdown',function(e){
+    var k=e.target.closest('[data-midi]'); if(!k) return;
+    e.preventDefault();
+    pointers[e.pointerId]=pressNote(+k.dataset.midi);
+  });
+  window.addEventListener('pointermove',function(e){
+    if(!(e.pointerId in pointers)) return;
+    var h=pointers[e.pointerId], k=keyAt(e.clientX,e.clientY);
+    if(!k){ if(h&&h.voice){releaseNote(h);pointers[e.pointerId]={midi:-1,voice:null};} return; }
+    var m=+k.dataset.midi;
+    if(!h||!h.voice||h.midi!==m){ releaseNote(h); pointers[e.pointerId]=pressNote(m); }
+  });
+  function up(e){ if(!(e.pointerId in pointers)) return; releaseNote(pointers[e.pointerId]); delete pointers[e.pointerId]; }
+  window.addEventListener('pointerup',up);
+  window.addEventListener('pointercancel',up);
+  root.addEventListener('contextmenu',function(e){e.preventDefault();});
+
+  function typing(e){var t=e.target; return t&&(t.tagName==='INPUT'&&t.type!=='range'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable);}
+  window.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey||typing(e)||$('view-player').classList.contains('hidden')) return;
+    if(e.code==='KeyZ'){ if(!e.repeat) setOctave(baseOct-1); return; }
+    if(e.code==='KeyX'){ if(!e.repeat) setOctave(baseOct+1); return; }
+    if(!(e.code in KEYMAP)||e.repeat||kbd[e.code]) return;
+    e.preventDefault();
+    kbd[e.code]=pressNote(12*(baseOct+1)+KEYMAP[e.code]);
+  });
+  window.addEventListener('keyup',function(e){ if(kbd[e.code]){releaseNote(kbd[e.code]);delete kbd[e.code];} });
+  window.addEventListener('blur',function(){
+    Object.keys(kbd).forEach(function(c){releaseNote(kbd[c]);delete kbd[c];});
+    Object.keys(pointers).forEach(function(i){releaseNote(pointers[i]);delete pointers[i];});
+  });
+})();
+$('oct-down').onclick=function(){setOctave(baseOct-1);};
+$('oct-up').onclick=function(){setOctave(baseOct+1);};
+
+/* volume / tone */
+$('volume').value=volume; $('volume-val').textContent=volume+'%';
+$('volume').oninput=function(){
+  volume=+this.value; $('volume-val').textContent=volume+'%';
+  if(master) master.gain.setTargetAtTime(volGain(),ctx.currentTime,0.01);
+  prefs.volume=volume; savePrefs();
+};
+$('tone-select').value=tone;
+$('tone-select').onchange=function(){tone=TONES[this.value]?this.value:'piano';prefs.tone=tone;savePrefs();};
+
+/* ---------- Song sequencer (tempo-aware, pausable, seekable) ---------- */
+var seq={item:null,id:null,pos:0,next:0,playing:false,last:0,active:[],timer:null,loop:false,bpm:120};
+function clampBpm(v){return Math.min(240,Math.max(40,v));}
+seq.bpm=clampBpm(typeof prefs.bpm==='number'?prefs.bpm:120);
+$('tempo').value=seq.bpm; $('tempo-val').textContent=seq.bpm+' จังหวะ/นาที';
+
+function releaseActive(){
+  seq.active.forEach(function(a){a.voice.release();light(a.midi,false);});
+  seq.active=[];
+}
+function firstIndexAtOrAfter(pos){
+  var ev=seq.item?seq.item.events:[]; for(var i=0;i<ev.length;i++){ if(ev[i].start>=pos-1e-9) return i; } return ev.length;
+}
+function updateTransportUI(){
+  var it=seq.item, total=it?it.total:0, secPerBeat=60/seq.bpm;
+  $('time-cur').textContent=fmtTime(seq.pos*secPerBeat);
+  $('time-total').textContent=fmtTime(total*secPerBeat);
+  if(document.activeElement!==$('progress')||!seqDragging) $('progress').value=total?Math.round(seq.pos/total*1000):0;
+}
+var seqDragging=false;
+function updateListUI(){
+  document.querySelectorAll('#playlist li, #rec-playlist li').forEach(function(li){
+    var b=li.querySelector('button'); if(!b||!li.dataset.id) return;
+    var cur=li.dataset.id===seq.id;
+    li.classList.toggle('cur',cur);
+    if(cur&&seq.playing){b.setAttribute('data-playing','1');b.textContent='⏸ พัก';}
+    else{b.removeAttribute('data-playing');b.textContent='▶ เล่น';}
+  });
+  $('play-btn').textContent=seq.playing?'⏸ พัก':'▶ เล่น';
+  $('now-title').textContent=seq.item?seq.item.title:'เลือกเพลงจากรายการด้านล่าง';
+}
+function tick(){
+  var now=performance.now(), dt=Math.min(now-seq.last,250); seq.last=now;
+  var item=seq.item; if(!item){return;}
+  var newPos=seq.pos+dt/1000*seq.bpm/60, ev=item.events;
+  while(seq.next<ev.length&&ev[seq.next].start<newPos){
+    var e=ev[seq.next++];
+    var a={midi:e.midi,end:e.start+Math.max(0.12,e.len*0.95),voice:startVoice(e.midi)};
+    light(e.midi,true); seq.active.push(a);
+  }
+  for(var i=seq.active.length-1;i>=0;i--){
+    var a2=seq.active[i];
+    if(a2.end<=newPos){a2.voice.release();light(a2.midi,false);seq.active.splice(i,1);}
+  }
+  if(newPos>=item.total){
+    releaseActive();
+    if(seq.loop&&item.total>0){seq.pos=newPos-item.total;seq.next=firstIndexAtOrAfter(seq.pos);}
+    else{ doStop(); return; }
+  } else seq.pos=newPos;
+  updateTransportUI();
+}
+function startTimer(){ if(seq.timer) return; seq.last=performance.now(); seq.timer=setInterval(tick,16); }
+function clearTimer(){ if(seq.timer){clearInterval(seq.timer);seq.timer=null;} }
+function doPlay(){
+  if(!seq.item){ var q=queue(); if(!q.length) return; loadItem(q[0]); }
+  audio();
+  if(seq.playing) return;
+  if(seq.pos>=seq.item.total-1e-9){seq.pos=0;seq.next=0;}
+  seq.playing=true; startTimer(); updateListUI();
+  if(seq.item.backing) startRecBacking(seq.item.backing,seq.pos);
+}
+function doPause(){ seq.playing=false; clearTimer(); releaseActive(); stopRecBacking(); updateListUI(); }
+function doStop(){ seq.playing=false; clearTimer(); releaseActive(); stopRecBacking(); seq.pos=0; seq.next=0; updateTransportUI(); updateListUI(); }
+function loadItem(it){ // it: {id,title,events,total}
+  var was=seq.playing;
+  seq.playing=false; clearTimer(); releaseActive(); stopRecBacking();
+  seq.item=it; seq.id=it.id; seq.pos=0; seq.next=0;
+  if(baseOct!==4&&$('view-player')&&!$('view-player').classList.contains('hidden')){ setOctave(4); }
+  updateTransportUI(); updateListUI();
+  return was;
+}
+function stopAll(){ doStop(); }
+
+/* queue = songs then recordings */
+function queue(){
+  var out=[];
+  getSongs().forEach(function(s){var p=parseNotes(s.notes); if(!p.error) out.push({id:s.id,title:s.title,events:p.events,total:p.total});});
+  getRecs().forEach(function(r){var it=recToItem(r); it.id=r.id; it.title=r.title; if(r.backing) it.backing=r.backing; out.push(it);});
+  return out;
+}
+function playById(id){
+  if(seq.id===id&&seq.item){ if(seq.playing) doPause(); else doPlay(); return; }
+  var it=queue().filter(function(x){return x.id===id;})[0]; if(!it) return;
+  loadItem(it); doPlay();
+}
+function step(dir){
+  var q=queue(); if(!q.length) return;
+  var i=-1; for(var k=0;k<q.length;k++) if(q[k].id===seq.id) i=k;
+  var j=i<0?0:(i+dir+q.length)%q.length, was=seq.playing;
+  loadItem(q[j]);
+  if(was) doPlay();
+}
+function playEvents(parsed){ // admin preview of unsaved/saved notes
+  loadItem({id:'__preview',title:'ตัวอย่างเพลง',events:parsed.events,total:parsed.total}); doPlay();
+}
+$('play-btn').onclick=function(){ if(seq.playing) doPause(); else doPlay(); };
+$('stop-btn').onclick=doStop;
+$('prev-btn').onclick=function(){ if(seq.playing&&seq.pos*60/seq.bpm>3){seq.pos=0;seq.next=0;releaseActive();updateTransportUI();return;} step(-1); };
+$('next-btn').onclick=function(){ step(1); };
+$('loop-btn').onclick=function(){ seq.loop=!seq.loop; this.setAttribute('aria-pressed',seq.loop?'true':'false'); };
+$('tempo').oninput=function(){
+  seq.bpm=clampBpm(+this.value); $('tempo-val').textContent=seq.bpm+' จังหวะ/นาที';
+  prefs.bpm=seq.bpm; savePrefs(); updateTransportUI();
+};
+var prog=$('progress');
+prog.addEventListener('pointerdown',function(){seqDragging=true;});
+window.addEventListener('pointerup',function(){seqDragging=false;});
+prog.addEventListener('input',function(){
+  if(!seq.item) {this.value=0;return;}
+  seq.pos=(+this.value)/1000*seq.item.total; releaseActive(); seq.next=firstIndexAtOrAfter(seq.pos);
+  updateTransportUI();
+});
+
+/* ---------- Player view ---------- */
+function renderPlayer(){
+  var pl=$('playlist'), songs=getSongs();
+  pl.innerHTML=songs.length?'':'<li><span class="t" style="color:var(--mut)">ยังไม่มีเพลง</span></li>';
+  songs.forEach(function(s){
+    var li=document.createElement('li'); li.className='song'; li.dataset.id=s.id;
+    var p=parseNotes(s.notes);
+    li.innerHTML='<span class="t">'+esc(s.title)+(p.error?'<small>โน้ตไม่ถูกต้อง</small>':'<small>'+p.count+' โน้ต</small>')+'</span><button class="play-song">▶ เล่น</button>';
+    li.querySelector('button').onclick=function(){ if(p.error){$('player-msg').textContent=p.error;return;} playById(s.id); };
+    pl.appendChild(li);
+  });
+  var rl=$('rec-playlist'), recs=getRecs();
+  rl.innerHTML=recs.length?'':'<li><span class="t" style="color:var(--mut)">ยังไม่มีเพลงที่บันทึก</span></li>';
+  recs.forEach(function(r){
+    var li=document.createElement('li'); li.className='rec'; li.dataset.id=r.id;
+    li.innerHTML='<span class="t">'+esc(r.title)+'<small>'+r.events.length+' โน้ต</small></span><button class="play-rec">▶ เล่น</button>';
+    li.querySelector('button').onclick=function(){ playById(r.id); };
+    rl.appendChild(li);
+  });
+  // current item deleted from storage?
+  if(seq.id&&seq.id!=='__preview'&&!queue().some(function(x){return x.id===seq.id;})){ doStop(); seq.item=null; seq.id=null; updateTransportUI(); }
+  updateListUI();
+}
+$('rec-btn').onclick=function(){
+  if(!recording){
+    recording=true; recEvents=[]; recStart=performance.now(); audio(); recBacking=backSnapshot();
+    this.textContent='■ หยุดอัด'; $('rec-status').classList.remove('hidden'); $('player-msg').textContent='';
+  } else {
+    recording=false; this.textContent='● อัดเสียง'; $('rec-status').classList.add('hidden');
+    if(!recEvents.length){$('player-msg').textContent='ไม่ได้บันทึกโน้ตใดๆ';return;}
+    var recs=getRecs(), d=new Date();
+    var rec={id:uid(),title:'เพลงที่บันทึก '+(recs.length+1)+' ('+pad2(d.getHours())+':'+pad2(d.getMinutes())+')'+(recBacking?' อิมโพรไวส์':''),events:recEvents.slice().sort(function(a,b){return a.t-b.t;})};
+    if(recBacking) rec.backing=recBacking;
+    recs.push(rec);
+    save(KEY_RECS,recs); $('player-msg').textContent='บันทึกเพลงแล้ว'; renderPlayer();
+  }
+};
+
+/* ---------- Improvise: scales, progressions, backing band ---------- */
+var SCALES={
+  minpent:{name:'ไมเนอร์เพนทาโทนิก',iv:[0,3,5,7,10]},
+  blues:  {name:'บลูส์',iv:[0,3,5,6,7,10],blue:6},
+  majpent:{name:'เมเจอร์เพนทาโทนิก',iv:[0,2,4,7,9]},
+  dorian: {name:'ดอเรียน',iv:[0,2,3,5,7,9,10]},
+  mixo:   {name:'มิกโซลิเดียน',iv:[0,2,4,5,7,9,10]}
+};
+var MAJOR_IV=[0,2,4,5,7,9,11], MINOR_IV=[0,2,3,5,7,8,10];
+var CHORDQ={'':[0,4,7],'m':[0,3,7],'7':[0,4,7,10],'maj7':[0,4,7,11],'m7':[0,3,7,10],'m7b5':[0,3,6,10]};
+var NAMES_S=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+var NAMES_F=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+var PROGS={
+  blues:[{id:'blues12',name:'บลูส์ 12 บาร์ (I7 IV7 V7)',minor:false,swing:true,bpm:100,
+    chords:[[0,'7','I7'],[0,'7','I7'],[0,'7','I7'],[0,'7','I7'],[5,'7','IV7'],[5,'7','IV7'],[0,'7','I7'],[0,'7','I7'],[7,'7','V7'],[5,'7','IV7'],[0,'7','I7'],[7,'7','V7']]}],
+  jazz:[
+    {id:'ii-V-I',name:'แจ๊ส ii-V-I (เมเจอร์)',minor:false,swing:true,bpm:120,chords:[[2,'m7','iim7'],[7,'7','V7'],[0,'maj7','Imaj7'],[0,'maj7','Imaj7']]},
+    {id:'ii-V-i',name:'แจ๊ส ii-V-i (ไมเนอร์)',minor:true,swing:true,bpm:120,chords:[[2,'m7b5','iim7b5'],[7,'7','V7'],[0,'m7','im7'],[0,'m7','im7']]}],
+  pop:[
+    {id:'I-V-vi-IV',name:'I – V – vi – IV',minor:false,chords:[[0,'','I'],[7,'','V'],[9,'m','vi'],[5,'','IV']]},
+    {id:'vi-IV-I-V',name:'vi – IV – I – V',minor:false,chords:[[9,'m','vi'],[5,'','IV'],[0,'','I'],[7,'','V']]},
+    {id:'I-vi-IV-V',name:'I – vi – IV – V (ยุค 50)',minor:false,chords:[[0,'','I'],[9,'m','vi'],[5,'','IV'],[7,'','V']]},
+    {id:'I-IV-V-IV',name:'I – IV – V – IV',minor:false,chords:[[0,'','I'],[5,'','IV'],[7,'','V'],[5,'','IV']]},
+    {id:'ii-V-I-vi',name:'ii – V – I – vi',minor:false,chords:[[2,'m','ii'],[7,'','V'],[0,'','I'],[9,'m','vi']]},
+    {id:'i-VI-III-VII',name:'i – VI – III – VII (ไมเนอร์)',minor:true,chords:[[0,'m','i'],[8,'','VI'],[3,'','III'],[10,'','VII']]}]
+};
+function useFlats(keyPc,minor){var r=minor?(keyPc+3)%12:keyPc; return r===1||r===3||r===5||r===8||r===10||(minor&&r===6);}
+function chordSym(pc,q,flats){return (flats?NAMES_F:NAMES_S)[pc]+q;}
+
+var imp={cat:'blues',prog:'blues12',key:0,style:'pop',scale:'minpent',auto:false,mode:'songs'};
+var mode='songs';
+function curProg(){var l=PROGS[imp.cat];for(var i=0;i<l.length;i++)if(l[i].id===imp.prog)return l[i];return l[0];}
+function swingStyle(){return imp.cat!=='pop';}
+function buildChords(cfg){
+  var pr=cfg.progDef, flats=useFlats(cfg.key,pr.minor);
+  return pr.chords.map(function(c){var pc=(cfg.key+c[0])%12; return {pc:pc,q:c[1],rn:c[2],iv:CHORDQ[c[1]],sym:chordSym(pc,c[1],flats)};});
+}
+function uiCfg(){
+  var pr=curProg();
+  return {cat:imp.cat,prog:pr.id,progDef:pr,key:imp.key,style:imp.cat==='pop'?imp.style:'swing',swing:+$('imp-swing').value,bpm:+$('imp-tempo').value};
+}
+function noteName(pc,flats){return (flats?NAMES_F:NAMES_S)[pc];}
+
+/* highlights */
+function autoScale(ch,cat){
+  if(ch.q==='7') return cat==='blues'?{root:ch.pc,type:'blues'}:{root:ch.pc,type:'mixo'};
+  if(ch.q==='m7'||ch.q==='m') return {root:ch.pc,type:'dorian'};
+  if(ch.q==='maj7'||ch.q==='') return {root:ch.pc,type:'majpent'};
+  if(ch.q==='m7b5') return {root:(ch.pc+3)%12,type:'minpent'};
+  return {root:ch.pc,type:'majpent'};
+}
+function currentScaleInfo(){ // {root,type} used for highlighting & text
+  var cfg=activeCfg();
+  if(cfg.cat==='pop'){ var minor=cfg.progDef.minor; return {root:cfg.key,type:minor?'minpent':'majpent'}; }
+  var ch=back.playing&&back.curBar>=0&&back.chords?back.chords[back.curBar]:null;
+  if(imp.auto&&ch) return autoScale(ch,cfg.cat);
+  return {root:cfg.key,type:imp.scale};
+}
+function activeCfg(){ return (back.playing&&back.cfg)?back.cfg:uiCfg(); }
+function updateHighlights(){
+  var keys=document.querySelectorAll('#piano [data-midi]');
+  var on=(mode==='improv');
+  var map={};
+  if(on){
+    var cfg=activeCfg(), sc=currentScaleInfo(), S=SCALES[sc.type];
+    S.iv.forEach(function(i){var pc=(sc.root+i)%12; map[pc]=(S.blue===i)?'mk-blue':'mk-sc';});
+    map[sc.root]='mk-root';
+    if(cfg.cat==='pop'){
+      var ch=back.playing&&back.curBar>=0&&back.chords?back.chords[back.curBar]:null;
+      if(ch){ ch.iv.forEach(function(i){map[(ch.pc+i)%12]='mk-ct';}); map[ch.pc]='mk-root'; }
+    }
+  }
+  keys.forEach(function(k){
+    k.classList.remove('mk-sc','mk-root','mk-blue','mk-ct');
+    var c=map[(+k.dataset.midi)%12]; if(c) k.classList.add(c);
+  });
+  $('lg-blue').classList.toggle('hidden',!(on&&currentScaleInfo().type==='blues'));
+  $('lg-ct').classList.toggle('hidden',!(on&&imp.cat==='pop'));
+}
+window.__updateHighlights=updateHighlights;
+
+/* ---- drum + bass + comp sounds (Web Audio, routed to the backing bus) ---- */
+var noiseBuf=null;
+function getNoise(c){
+  if(!noiseBuf||noiseBuf.sampleRate!==c.sampleRate){
+    noiseBuf=c.createBuffer(1,c.sampleRate,c.sampleRate); var d=noiseBuf.getChannelData(0);
+    for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  }
+  return noiseBuf;
+}
+function noiseHit(t,g,len,type,freq,q,dest){
+  var c=ctx, src=c.createBufferSource(); src.buffer=getNoise(c);
+  var f=c.createBiquadFilter(); f.type=type; f.frequency.value=freq; f.Q.value=q||0.7;
+  var e=c.createGain(); e.gain.setValueAtTime(g,t); e.gain.exponentialRampToValueAtTime(0.0001,t+len);
+  src.connect(f); f.connect(e); e.connect(dest); src.start(t,Math.random()*0.5,len+0.05); src.stop(t+len+0.05);
+}
+function drum(kind,t,g,dest){
+  var c=ctx; if(!c||g<=0) return;
+  if(kind==='hat') noiseHit(t,g,0.045,'highpass',7500,0.7,dest);
+  else if(kind==='openhat') noiseHit(t,g,0.2,'highpass',7000,0.7,dest);
+  else if(kind==='ride'){ noiseHit(t,g,0.38,'bandpass',9500,0.6,dest); noiseHit(t,g*0.5,0.25,'highpass',6000,0.5,dest); }
+  else if(kind==='rim'){ noiseHit(t,g,0.04,'bandpass',2500,1.5,dest); }
+  else if(kind==='snare'){
+    noiseHit(t,g,0.16,'bandpass',1900,0.8,dest);
+    var o=c.createOscillator(), e=c.createGain(); o.type='triangle'; o.frequency.setValueAtTime(200,t); o.frequency.exponentialRampToValueAtTime(140,t+0.08);
+    e.gain.setValueAtTime(g*0.8,t); e.gain.exponentialRampToValueAtTime(0.0001,t+0.12); o.connect(e); e.connect(dest); o.start(t); o.stop(t+0.15);
+  } else if(kind==='kick'){
+    var k=c.createOscillator(), ke=c.createGain(); k.type='sine'; k.frequency.setValueAtTime(130,t); k.frequency.exponentialRampToValueAtTime(45,t+0.12);
+    ke.gain.setValueAtTime(g*1.6,t); ke.gain.exponentialRampToValueAtTime(0.0001,t+0.28); k.connect(ke); ke.connect(dest); k.start(t); k.stop(t+0.3);
+  }
+}
+var BASS_P ={t1:'sine',t2:'triangle',r2:1,det:3,g1:1,g2:0.4,cut:9,peak:0.75,a:0.012,sus:0.55,tau:0.3,rel:0.09};
+var COMP_P ={t1:'triangle',t2:'sine',r2:1,det:4,g1:1,g2:0.5,cut:5,peak:0.28,a:0.01,sus:0.12,tau:0.3,rel:0.16};
+var PIANO_P={t1:'triangle',t2:'sawtooth',r2:1,det:5,g1:1,g2:0.28,cut:7,peak:0.34,a:0.008,sus:0.2,tau:0.6,rel:0.3};
+function bassMidi(pc){var m=36+pc; return m>43?m-12:m;}
+function compRoot(pc){return 45+(((pc-45)%12)+12)%12;}
+function voice(m,t,len,p,vel){ var v=startVoice(m,t,p,back.run,vel); v.release(t+len); }
+
+/* ---- scheduler ---- */
+var back={playing:false,timer:null,beat:0,next:0,ui:[],cfg:null,chords:null,curBar:-1,lastBeat:null,run:null,byRec:false,fixedBpm:null};
+function getBpm(){return back.fixedBpm||(back.cfg&&back.cfg.liveBpm?+$('imp-tempo').value:back.cfg.bpm);}
+function swingF(){ if(!back.cfg||back.cfg.style!=='swing') return 0.5; var a=back.cfg.liveSwing?+$('imp-swing').value:back.cfg.swing; return 0.5+0.25*a/100; }
+function walkNote(ch,nextCh,bar,b){
+  var r=bassMidi(ch.pc), iv=ch.iv;
+  if(b===0) return r;
+  if(b===1) return bar%2===0?r+iv[1]:r+iv[2];
+  if(b===2) return bar%2===0?r+iv[2]:r+iv[2]+2;
+  var nr=bassMidi(nextCh.pc); if(nr===r) nr=r; var dir=(bar%2===0)?-1:1; var ap=nr+dir; if(nextCh===ch) ap=r+iv[2]+2;
+  return ap;
+}
+function schedBeat(){
+  var cfg=back.cfg, ch=back.chords, n=ch.length, bar=Math.floor(back.beat/4), b=back.beat%4, t=back.next;
+  var spb=60/getBpm(), c=ch[bar], nx=ch[(bar+1)%n], dest=back.run, st=cfg.style;
+  back.ui.push({time:t,beat:back.beat,bar:bar,b:b});
+  if(st==='swing'){
+    var f=swingF(), off=t+f*spb;
+    var bn=walkNote(c,nx,bar,b); voice(bn,t,spb*0.92,BASS_P,1);
+    drum('ride',t,b%2===0?0.075:0.09,dest);
+    if(b===1||b===3){ drum('ride',off,0.06,dest); drum('hat',t,0.13,dest); }
+    if(b===0||b===2) drum('kick',t,b===0?0.16:0.09,dest);
+    // shell voicing comping (root, 3rd, 7th)
+    var r=compRoot(c.pc), sh=[r,r+c.iv[1],r+(c.iv[3]!=null?c.iv[3]:c.iv[2])];
+    if(b===0){ sh.forEach(function(m,i){voice(m,t,spb*0.55,COMP_P,i===0?0.7:1);}); }
+    if(b===1){ sh.forEach(function(m,i){voice(m,off,spb*0.45,COMP_P,i===0?0.6:0.9);}); }
+    if(b===3&&bar%2===1){ sh.forEach(function(m){voice(m,off,spb*0.35,COMP_P,0.7);}); }
+  } else if(st==='pop'){
+    var e8=t+0.5*spb, r0=bassMidi(c.pc), tri=[compRoot(c.pc)+0,0,0];
+    var base=48+((c.pc-48)%12+12)%12; var tones=c.iv.slice(0,3).map(function(i){return base+i;});
+    drum('hat',t,0.07,dest); drum('hat',e8,0.045,dest);
+    if(b===0){drum('kick',t,0.34,dest);} if(b===2){drum('kick',t,0.3,dest);drum('kick',e8,0.18,dest);}
+    if(b===1||b===3) drum('snare',t,0.16,dest);
+    if(b===0){ voice(r0,t,spb*1.5,BASS_P,1); tones.forEach(function(m){voice(m,t,spb*1.8,PIANO_P,0.9);}); }
+    if(b===1){ voice(r0,e8,spb*0.4,BASS_P,0.8); }
+    if(b===2){ voice(r0,t,spb*1.5,BASS_P,0.95); tones.forEach(function(m){voice(m,t,spb*1.6,PIANO_P,0.8);}); }
+    if(b===3){ voice(r0+7>43?r0-5:r0+7,e8,spb*0.4,BASS_P,0.7); voice(tones[1]+12,t,spb*0.5,PIANO_P,0.55); voice(tones[2]+12,e8,spb*0.5,PIANO_P,0.5); }
+  } else { // ballad: slow arpeggios, soft drums
+    var e8b=t+0.5*spb, rb=bassMidi(c.pc), base2=48+((c.pc-48)%12+12)%12;
+    var T=[base2+c.iv[0],base2+c.iv[1],base2+c.iv[2],base2+12];
+    var P=[0,1,2,3,2,1,2,1];
+    voice(T[P[b*2]],t,spb*2.2,PIANO_P,b===0?0.8:0.6);
+    voice(T[P[b*2+1]],e8b,spb*2.0,PIANO_P,0.5);
+    if(b===0||b===2) voice(rb,t,spb*1.9,BASS_P,b===0?0.85:0.65);
+    if(b===0) drum('kick',t,0.2,dest);
+    if(b===2) drum('rim',t,0.12,dest);
+    drum('hat',t,0.04,dest);
+  }
+  back.beat=(back.beat+1)%(n*4); back.next+=spb;
+}
+function backTick(){
+  var c=ctx; if(!c||!back.playing) return;
+  var guard=0; while(back.next<c.currentTime+0.2&&guard++<16) schedBeat();
+  while(back.ui.length&&back.ui[0].time<=c.currentTime){
+    var e=back.ui.shift(); back.lastBeat=e;
+    if(e.bar!==back.curBar) setBar(e.bar);
+  }
+}
+function setBar(bar){
+  back.curBar=bar; var ch=back.chords[bar];
+  $('cc-name').textContent=ch.sym; $('cc-roman').textContent=ch.rn;
+  $('cc-bar').textContent='บาร์ '+(bar+1)+' / '+back.chords.length;
+  var cells=document.querySelectorAll('#bar-grid .bar');
+  cells.forEach(function(x,i){x.classList.toggle('cur',i===bar);});
+  updateScaleText();
+  updateHighlights();
+}
+function updateScaleText(){
+  var cfg=activeCfg(), sc=currentScaleInfo(), flats=useFlats(cfg.key,cfg.progDef.minor);
+  var label=noteName(sc.root,flats)+' '+SCALES[sc.type].name;
+  var txt;
+  if(cfg.cat==='pop') txt='สเกลที่ใช้เล่นเมโลดี้: '+label+' | จุดทอง = โน้ตหลักของคอร์ด';
+  else txt=(imp.auto?'สเกลที่แนะนำตามคอร์ด: ':'สเกลที่ใช้: ')+label;
+  $('cc-scale').textContent=txt;
+}
+function renderBarGrid(){
+  var cfg=activeCfg(), chs=buildChords(cfg), g=$('bar-grid');
+  g.style.gridTemplateColumns='repeat('+(chs.length>4?4:chs.length)+',1fr)';
+  g.innerHTML=chs.map(function(c,i){return '<div class="bar" data-bar="'+i+'"><small>บาร์ '+(i+1)+'</small><b>'+esc(c.sym)+'</b><small>'+esc(c.rn)+'</small></div>';}).join('');
+  if(!back.playing){
+    var c0=chs[0]; $('cc-name').textContent='–'; $('cc-roman').textContent='–'; $('cc-bar').textContent='บาร์ – / '+chs.length;
+  }
+  updateScaleText();
+}
+function backSnapshot(){
+  if(!back.playing||!back.cfg) return null;
+  var c=back.cfg, ph=null;
+  if(back.lastBeat){ var spb=60/getBpm(); ph=(back.lastBeat.beat+Math.min(1,Math.max(0,(ctx.currentTime-back.lastBeat.time)/spb)))%(back.chords.length*4); }
+  return {cat:c.cat,prog:c.prog,key:c.key,style:c.style,bpm:Math.round(getBpm()),swing:c.liveSwing?+$('imp-swing').value:c.swing,phase:ph||0};
+}
+function backStart(over,fromBeat,byRec){
+  var c=audio(); if(!c) return;
+  if(back.playing) backStop();
+  var cfg;
+  if(over){
+    var pr=PROGS[over.cat].filter(function(p){return p.id===over.prog;})[0]||PROGS[over.cat][0];
+    cfg={cat:over.cat,prog:pr.id,progDef:pr,key:over.key,style:over.style,swing:over.swing,bpm:over.bpm,liveBpm:false,liveSwing:false};
+  } else { cfg=uiCfg(); cfg.liveBpm=true; cfg.liveSwing=true; }
+  back.cfg=cfg; back.chords=buildChords(cfg); back.byRec=!!byRec; back.fixedBpm=null;
+  var total=back.chords.length*4, fb=fromBeat||0, ib=Math.ceil(fb-1e-9), wait=(ib-fb)*60/(over?over.bpm:+$('imp-tempo').value);
+  back.beat=((ib%total)+total)%total; back.next=c.currentTime+0.1+Math.max(0,wait); back.ui=[]; back.curBar=-1; back.lastBeat=null;
+  back.run=c.createGain(); back.run.gain.value=1; back.run.connect(bus);
+  back.playing=true;
+  if(!over){ renderBarGrid(); } else { renderBarGridFor(cfg); }
+  back.timer=setInterval(backTick,25); backTick();
+  $('imp-start').textContent='■ หยุดแบ็คกิ้ง';
+}
+function renderBarGridFor(cfg){
+  var chs=buildChords(cfg), g=$('bar-grid');
+  g.innerHTML=chs.map(function(c,i){return '<div class="bar" data-bar="'+i+'"><small>บาร์ '+(i+1)+'</small><b>'+esc(c.sym)+'</b><small>'+esc(c.rn)+'</small></div>';}).join('');
+}
+function backStop(){
+  if(back.timer){clearInterval(back.timer);back.timer=null;}
+  if(back.run){ var r=back.run; try{r.gain.setTargetAtTime(0,ctx.currentTime,0.03);}catch(e){} setTimeout(function(){try{r.disconnect();}catch(e){}},500); back.run=null; }
+  var was=back.playing; back.playing=false; back.ui=[]; back.curBar=-1; back.byRec=false; back.fixedBpm=null;
+  $('imp-start').textContent='▶ เริ่มแบ็คกิ้ง';
+  document.querySelectorAll('#bar-grid .bar').forEach(function(x){x.classList.remove('cur');});
+  if(was){ renderBarGrid(); }
+  updateHighlights();
+}
+function startRecBacking(b,pos){
+  if(!ctx) audio();
+  var ratio=seq.bpm/120;
+  var cfg={cat:b.cat,prog:b.prog,key:b.key,style:b.style,swing:b.swing,bpm:b.bpm*ratio};
+  backStart(cfg,(b.phase||0)+pos*b.bpm/120,true);
+}
+function stopRecBacking(){ if(back.playing&&back.byRec) backStop(); }
+
+/* ---- UI wiring ---- */
+function fillProgs(){
+  var sel=$('imp-prog'); sel.innerHTML=PROGS[imp.cat].map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+'</option>';}).join('');
+  if(!PROGS[imp.cat].some(function(p){return p.id===imp.prog;})) imp.prog=PROGS[imp.cat][0].id;
+  sel.value=imp.prog;
+}
+function applyCatUI(){
+  var pop=imp.cat==='pop';
+  $('grp-style').classList.toggle('hidden',!pop);
+  $('grp-scale').classList.toggle('hidden',pop);
+  $('grp-auto').classList.toggle('hidden',pop);
+  $('help-blues').classList.toggle('hidden',pop);
+  $('help-pop').classList.toggle('hidden',!pop);
+  $('ear-panel').classList.toggle('hidden',!pop);
+  $('imp-swing').disabled=pop; 
+}
+function suggestTempo(){
+  var bpm=imp.cat==='pop'?(imp.style==='ballad'?66:100):curProg().bpm;
+  $('imp-tempo').value=bpm; $('imp-tempo-val').textContent=bpm+' จังหวะ/นาที';
+}
+function reconfigure(restart){
+  var was=back.playing&&!back.byRec;
+  if(was) backStop();
+  renderBarGrid(); updateHighlights();
+  if(was&&restart) backStart();
+}
+$('imp-key').onchange=function(){imp.key=+this.value;prefs.impKey=imp.key;savePrefs();reconfigure(true);};
+$('imp-cat').onchange=function(){imp.cat=this.value;fillProgs();imp.prog=$('imp-prog').value;applyCatUI();suggestTempo();reconfigure(true);earReset();};
+$('imp-prog').onchange=function(){imp.prog=this.value;suggestTempo();reconfigure(true);};
+$('imp-style').onchange=function(){imp.style=this.value;suggestTempo();reconfigure(true);};
+$('imp-scale').onchange=function(){imp.scale=this.value;updateScaleText();updateHighlights();};
+$('imp-auto').onclick=function(){imp.auto=!imp.auto;this.setAttribute('aria-pressed',imp.auto?'true':'false');updateScaleText();updateHighlights();};
+$('imp-tempo').oninput=function(){$('imp-tempo-val').textContent=this.value+' จังหวะ/นาที';};
+$('imp-swing').oninput=function(){$('imp-swing-val').textContent=this.value+'%';};
+$('imp-vol').oninput=function(){backVol=+this.value;$('imp-vol-val').textContent=backVol+'%';if(bus)bus.gain.setTargetAtTime(backGain(),ctx.currentTime,0.01);prefs.backVol=backVol;savePrefs();};
+$('imp-start').onclick=function(){ if(back.playing&&!back.byRec) backStop(); else { if(seq.playing) doPause(); backStart(); } };
+if(typeof prefs.backVol==='number'){backVol=prefs.backVol;} $('imp-vol').value=backVol; $('imp-vol-val').textContent=backVol+'%';
+if(typeof prefs.impKey==='number'){imp.key=prefs.impKey;$('imp-key').value=imp.key;}
+
+function setMode(m){
+  mode=m;
+  $('songs-panel').classList.toggle('hidden',m!=='songs');
+  $('improv-panel').classList.toggle('hidden',m!=='improv');
+  $('tab-songs').setAttribute('aria-pressed',m==='songs'?'true':'false');
+  $('tab-improv').setAttribute('aria-pressed',m==='improv'?'true':'false');
+  if(m==='songs'){ if(back.playing&&!back.byRec) backStop(); } else { if(seq.playing) doPause(); renderBarGrid(); }
+  updateHighlights();
+}
+$('tab-songs').onclick=function(){setMode('songs');};
+$('tab-improv').onclick=function(){setMode('improv');};
+
+/* ---- ear training (ฝึกตามหู) ---- */
+var ear={melody:[],got:[],answering:false,scored:false,score:0,total:0,timers:[]};
+function earReset(){ ear.timers.forEach(clearTimeout); ear.timers=[]; ear.melody=[];ear.got=[];ear.answering=false; $('ear-replay').disabled=true; $('ear-fb').textContent=''; $('ear-fb').className=''; }
+function earScale(){
+  var pr=curProg(), iv=pr.minor?MINOR_IV:MAJOR_IV, base=12*(baseOct+1), out=[];
+  for(var m=base;m<base+24;m++){ if(iv.indexOf(((m-imp.key)%12+12)%12)>=0) out.push(m); }
+  return out;
+}
+function earGenerate(){
+  var sc=earScale(), n=4+Math.floor(Math.random()*3), i=3+Math.floor(Math.random()*(sc.length-8)), mel=[];
+  for(var k=0;k<n;k++){
+    mel.push(sc[i]);
+    var step=[-2,-1,-1,1,1,2][Math.floor(Math.random()*6)]; i=Math.min(sc.length-1,Math.max(0,i+step));
+  }
+  return mel;
+}
+function earPlay(){
+  ear.timers.forEach(clearTimeout); ear.timers=[];
+  var flats=useFlats(imp.key,curProg().minor);
+  var tonic=12*(baseOct+1)+((imp.key-12*(baseOct+1))%12+12)%12;
+  var t=0, seqN=[{m:tonic,d:600,v:0.6}].concat(ear.melody.map(function(m){return {m:m,d:480,v:1};}));
+  seqN.forEach(function(e,idx){
+    var when=t+(idx===1?350:0); t=when+e.d;
+    ear.timers.push(setTimeout(function(){var v=startVoice(e.m,0,null,null,e.v);ear.timers.push(setTimeout(function(){v.release();},e.d-40));},when));
+  });
+  return t;
+}
+function earStartAnswering(){ ear.got=[]; ear.answering=true; }
+$('ear-new').onclick=function(){
+  audio(); earReset();
+  ear.melody=earGenerate(); ear.scored=false; $('ear-replay').disabled=false;
+  $('ear-fb').textContent='🎧 กำลังเล่นโจทย์...'; $('ear-fb').className='';
+  var dur=earPlay();
+  ear.timers.push(setTimeout(function(){earStartAnswering();$('ear-fb').textContent='ตาคุณ: เล่นตามให้ครบ '+ear.melody.length+' โน้ต';},dur+100));
+};
+$('ear-replay').onclick=function(){
+  if(!ear.melody.length) return; audio();
+  ear.answering=false; ear.got=[]; $('ear-fb').className=''; $('ear-fb').textContent='🎧 กำลังเล่นซ้ำ...';
+  var dur=earPlay();
+  ear.timers.push(setTimeout(function(){earStartAnswering();$('ear-fb').textContent='ตาคุณ: เล่นตามให้ครบ '+ear.melody.length+' โน้ต'+(ear.scored?' (ฝึกซ้ำ ไม่นับคะแนน)':'');},dur+100));
+};
+window.__earInput=function(midi){
+  if(!ear.answering) return;
+  ear.got.push(midi);
+  if(ear.got.length<ear.melody.length) return;
+  ear.answering=false;
+  var ok=ear.melody.every(function(m,i){return ((m-ear.got[i])%12+12)%12===0;});
+  var flats=useFlats(imp.key,curProg().minor);
+  if(!ear.scored){ ear.total++; if(ok) ear.score++; ear.scored=true; }
+  $('ear-score').textContent='คะแนน: '+ear.score+' / '+ear.total;
+  if(ok){ $('ear-fb').textContent='✓ ถูกต้อง!'; $('ear-fb').className='ok'; }
+  else { $('ear-fb').textContent='✗ ยังไม่ตรง โน้ตที่ถูกคือ '+ear.melody.map(function(m){return noteName(m%12,flats);}).join(' – ')+' (กด “ฟังซ้ำ” แล้วลองใหม่)'; $('ear-fb').className='no'; }
+};
+window.__ear=ear; window.__imp=imp; window.__back=back;
+
+fillProgs(); applyCatUI(); suggestTempo(); renderBarGrid();
+
+/* ---------- Admin view ---------- */
+function isAdmin(){return sessionStorage.getItem(KEY_SESSION)==='1';}
+function setMsg(id,text,cls){var e=$(id);e.textContent=text||'';e.className='msg'+(cls?' '+cls:'');}
+
+function renderAdmin(){
+  var ul=$('admin-songs'), songs=getSongs();
+  ul.innerHTML=songs.length?'':'<li><span class="t" style="color:var(--mut)">ไม่มีเพลง</span></li>';
+  songs.forEach(function(s,i){
+    var li=document.createElement('li'); li.dataset.id=s.id;
+    li.innerHTML='<span class="t">'+esc(s.title)+'<small>'+esc(s.notes)+'</small></span>'+
+      '<button class="sec up" '+(i===0?'disabled':'')+' title="ขึ้น" aria-label="เลื่อนขึ้น">▲</button>'+
+      '<button class="sec down" '+(i===songs.length-1?'disabled':'')+' title="ลง" aria-label="เลื่อนลง">▼</button>'+
+      '<button class="sec prev" aria-label="ฟังตัวอย่าง">▶</button>'+
+      '<button class="bad del">ลบ</button>';
+    li.querySelector('.up').onclick=function(){move(i,-1);};
+    li.querySelector('.down').onclick=function(){move(i,1);};
+    li.querySelector('.prev').onclick=function(){var p=parseNotes(s.notes);if(!p.error)playEvents(p);};
+    li.querySelector('.del').onclick=function(){
+      if(!confirm('ลบเพลง "'+s.title+'" ?')) return;
+      save(KEY_SONGS,getSongs().filter(function(x){return x.id!==s.id;})); renderAdmin(); renderPlayer();
+    };
+    ul.appendChild(li);
+  });
+  var rl=$('admin-recs'), recs=getRecs();
+  rl.innerHTML=recs.length?'':'<li><span class="t" style="color:var(--mut)">ไม่มีเพลงที่บันทึก</span></li>';
+  recs.forEach(function(r){
+    var li=document.createElement('li'); li.dataset.id=r.id;
+    li.innerHTML='<span class="t">'+esc(r.title)+'<small>'+r.events.length+' โน้ต</small></span><button class="bad del">ลบ</button>';
+    li.querySelector('.del').onclick=function(){
+      if(!confirm('ลบเพลงที่บันทึกนี้ ?')) return;
+      save(KEY_RECS,getRecs().filter(function(x){return x.id!==r.id;})); renderAdmin(); renderPlayer();
+    };
+    rl.appendChild(li);
+  });
+}
+function move(i,dir){
+  var s=getSongs(), j=i+dir; if(j<0||j>=s.length) return;
+  var t=s[i]; s[i]=s[j]; s[j]=t; save(KEY_SONGS,s); renderAdmin(); renderPlayer();
+}
+$('login-form').onsubmit=function(e){
+  e.preventDefault();
+  var h=sha256($('login-pw').value);
+  if(h===currentPwHash()){
+    sessionStorage.setItem(KEY_SESSION,'1'); $('login-pw').value=''; setMsg('login-msg',''); route();
+  } else { setMsg('login-msg','รหัสผ่านไม่ถูกต้อง','err'); $('login-pw').value=''; }
+};
+$('logout-btn').onclick=function(){sessionStorage.removeItem(KEY_SESSION);stopAll();route();};
+$('preview-btn').onclick=function(){
+  var p=parseNotes($('song-notes').value);
+  if(p.error){setMsg('add-msg',p.error,'err');return;}
+  setMsg('add-msg','โน้ตถูกต้อง '+p.count+' ตัว ความยาวรวม '+p.total+' จังหวะ (กำลังเล่นตัวอย่าง)','ok');
+  playEvents(p);
+};
+$('add-btn').onclick=function(){
+  var title=$('song-title').value.trim(), p=parseNotes($('song-notes').value);
+  if(!title){setMsg('add-msg','กรุณากรอกชื่อเพลง','err');return;}
+  if(p.error){setMsg('add-msg',p.error,'err');return;}
+  var s=getSongs(); s.push({id:uid(),title:title,notes:$('song-notes').value.trim().split(/\s+/).join(' ')});
+  save(KEY_SONGS,s); $('song-title').value=''; $('song-notes').value='';
+  setMsg('add-msg','เพิ่มเพลง "'+title+'" แล้ว','ok'); renderAdmin(); renderPlayer();
+};
+$('reset-songs-btn').onclick=function(){
+  if(!confirm('คืนค่ารายการเพลงเป็นเพลงเริ่มต้น? (เพลงที่เพิ่มเองจะถูกลบ)')) return;
+  save(KEY_SONGS,DEFAULT_SONGS.slice()); renderAdmin(); renderPlayer();
+};
+$('pw-form').onsubmit=function(e){
+  e.preventDefault();
+  var o=$('pw-old').value, n=$('pw-new').value, n2=$('pw-new2').value;
+  if(sha256(o)!==currentPwHash()) return setMsg('pw-msg','รหัสผ่านเดิมไม่ถูกต้อง','err');
+  if(n.length<6) return setMsg('pw-msg','รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร','err');
+  if(n!==n2) return setMsg('pw-msg','การยืนยันรหัสผ่านไม่ตรงกัน','err');
+  localStorage.setItem(KEY_PW,sha256(n));
+  $('pw-old').value=$('pw-new').value=$('pw-new2').value='';
+  setMsg('pw-msg','เปลี่ยนรหัสผ่านเรียบร้อยแล้ว','ok');
+};
+
+/* ---------- Routing ---------- */
+function route(){
+  var admin=location.hash==='#admin';
+  $('view-player').classList.toggle('hidden',admin);
+  $('view-admin').classList.toggle('hidden',!admin);
+  $('nav-player').classList.toggle('cur',!admin); $('nav-admin').classList.toggle('cur',admin);
+  stopAll(); backStop();
+  if(admin){
+    var ok=isAdmin();
+    $('admin-login').classList.toggle('hidden',ok);
+    $('admin-panel').classList.toggle('hidden',!ok);
+    if(ok) renderAdmin(); else $('login-pw').focus();
+  } else { renderPlayer(); setMode(mode); }
+}
+window.addEventListener('hashchange',route);
+window.__sha256=sha256;
+window.__audioState=function(){return ctx?ctx.state:'none';};
+window.__peak=function(){if(!analyser)return 0;var a=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(a);var m=0;for(var i=0;i<a.length;i++)m=Math.max(m,Math.abs(a[i]));return m;};
+window.__swingF=function(){return swingF();};
+buildPiano(); route();
+})();
+</script>
+</body>
+</html>
